@@ -15,6 +15,9 @@ bpytop
 - pack managers
 brew
 
+- coding
+gi (gitgnore)
+
 
 
 - dev
