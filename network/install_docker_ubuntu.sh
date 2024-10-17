@@ -22,7 +22,7 @@ set -e
 # Update the package index
 print_message "Updating package index..."
 show_progress 5
-apt-get update -y > /dev/null 2>&1
+apt-get update -y
 print_message "Package index updated."
 
 # Install prerequisites for Docker
@@ -33,13 +33,13 @@ apt-get install -y \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release > /dev/null 2>&1
+    lsb-release
 print_message "Prerequisites installed."
 
 # Add Docker’s official GPG key
 print_message "Adding Docker's official GPG key..."
 show_progress 3
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 print_message "Docker's GPG key added."
 
 # Set up the stable Docker repository
@@ -47,26 +47,26 @@ print_message "Setting up the Docker repository..."
 show_progress 3
 echo \
 "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-$(lsb_release -cs) stable" |  tee /etc/apt/sources.list.d/docker.list > /dev/null
+$(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list
 print_message "Docker repository set up."
 
 # Update the package index again to include Docker's packages
 print_message "Updating package index again for Docker packages..."
 show_progress 5
-apt-get update -y > /dev/null 2>&1
+apt-get update -y
 print_message "Package index updated for Docker."
 
 # Install Docker Engine
 print_message "Installing Docker Engine..."
 show_progress 5
-apt-get install -y docker-ce docker-ce-cli containerd.io > /dev/null 2>&1
+apt-get install -y docker-ce docker-ce-cli containerd.io
 print_message "Docker Engine installed."
 
 # Start and enable the Docker service
 print_message "Starting Docker service..."
 show_progress 3
-systemctl start docker > /dev/null 2>&1
-systemctl enable docker > /dev/null 2>&1
+systemctl start docker
+systemctl enable docker
 print_message "Docker service started and enabled."
 
 # Add the current user to the docker group
@@ -76,7 +76,7 @@ print_message "User added to the docker group."
 
 # Verify Docker installation
 print_message "Verifying Docker installation..."
-if docker --version > /dev/null 2>&1; then
+if docker --version; then
     print_message "Docker version: $(docker --version)"
 else
     echo -e "\033[1;31mDocker installation failed.\033[0m"  # Red error message
@@ -85,7 +85,7 @@ fi
 
 # Verify installation of Docker Compose (CLI plugin)
 print_message "Verifying installation of Docker Compose (CLI plugin)..."
-if docker compose version > /dev/null 2>&1; then
+if docker compose version; then
     print_message "Docker Compose version: $(docker compose version)"
 else
     echo -e "\033[1;31mDocker Compose installation failed.\033[0m"  # Red error message
