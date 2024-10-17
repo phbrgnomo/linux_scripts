@@ -1,69 +1,98 @@
 #!/bin/bash
+
+# Function to print messages in a formatted way
+print_message() {
+    echo -e "\n\033[1;34m$1\033[0m"
+}
+
+# Function to show a progress bar
+show_progress() {
+    local duration=$1
+    echo -ne "\033[1;32m["  # Green color
+    for ((i=0; i<50; i++)); do
+        sleep $(bc <<< "scale=2; $duration / 50")  # Adjust sleep time
+        echo -ne "="
+    done
+    echo -e "]\033[0m"  # Reset color
+}
+
+# Exit script if any command fails
 set -e
 
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-INFO="${BLUE}[INFO]${NC}"
-SUCCESS="${GREEN}[SUCCESS]${NC}"
-WARNING="${YELLOW}[WARNING]${NC}"
-ERROR="${RED}[ERROR]${NC}"
+# Update the package index
+print_message "Updating package index..."
+show_progress 5
+sudo apt-get update -y > /dev/null 2>&1
+print_message "Package index updated."
 
-show_banner() {
-    clear
-    echo -e "${BLUE}"
-    echo "======================================================"
-    echo "              Docker Installation Script               "
-    echo "======================================================"
-    echo -e "${NC}"
-}
+# Install prerequisites for Docker
+print_message "Installing prerequisites for Docker..."
+show_progress 5
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release > /dev/null 2>&1
+print_message "Prerequisites installed."
 
-check_status() {
-    if [ $? -eq 0 ]; then
-        echo -e "${SUCCESS} $1"
-    else
-        echo -e "${ERROR} $2"
-        exit 1
-    fi
-}
+# Add Docker’s official GPG key
+print_message "Adding Docker's official GPG key..."
+show_progress 3
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
+print_message "Docker's GPG key added."
 
+# Set up the stable Docker repository
+print_message "Setting up the Docker repository..."
+show_progress 3
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+print_message "Docker repository set up."
 
-install_docker() {
-    
-    # Removendo versões antigas
-    apt-get remove docker docker-engine docker.io containerd runc &> /dev/null
-    
-    # Instalando dependências
-    apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release
-    
-    # Adicionando chave GPG oficial do Docker
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    
-    # Configurando repositório
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-        $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
-    # Instalando Docker
-    apt-get update
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    
-    check_status "Docker instalado com sucesso" "Falha na instalação do Docker"
-}
+# Update the package index again to include Docker's packages
+print_message "Updating package index again for Docker packages..."
+show_progress 5
+sudo apt-get update -y > /dev/null 2>&1
+print_message "Package index updated for Docker."
 
-main() {
-    apt-get update && apt-get upgrade -y
+# Install Docker Engine
+print_message "Installing Docker Engine..."
+show_progress 5
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io > /dev/null 2>&1
+print_message "Docker Engine installed."
 
-    install_docker
+# Start and enable the Docker service
+print_message "Starting Docker service..."
+show_progress 3
+sudo systemctl start docker > /dev/null 2>&1
+sudo systemctl enable docker > /dev/null 2>&1
+print_message "Docker service started and enabled."
 
-}
+# Add the current user to the docker group
+print_message "Adding the user to the docker group..."
+sudo usermod -aG docker $USER
+print_message "User added to the docker group."
 
-main "$1"
+# Verify Docker installation
+print_message "Verifying Docker installation..."
+if docker --version > /dev/null 2>&1; then
+    print_message "Docker version: $(docker --version)"
+else
+    echo -e "\033[1;31mDocker installation failed.\033[0m"  # Red error message
+    exit 1
+fi
+
+# Verify installation of Docker Compose (CLI plugin)
+print_message "Verifying installation of Docker Compose (CLI plugin)..."
+if docker compose version > /dev/null 2>&1; then
+    print_message "Docker Compose version: $(docker compose version)"
+else
+    echo -e "\033[1;31mDocker Compose installation failed.\033[0m"  # Red error message
+    exit 1
+fi
+
+# Completion message
+print_message "Docker and Docker Compose have been installed successfully."
+echo -e "\033[1;32mYou can now use 'docker compose up' to run your containers.\033[0m"
+echo -e "\033[1;33mYou may need to log out and back in for group changes to take effect.\033[0m"
