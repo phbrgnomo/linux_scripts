@@ -1,21 +1,12 @@
 #!/bin/bash
 
-# Function to install Homebrew if not already installed
-install_homebrew() {
-    echo "Homebrew not found. Installing Homebrew..."
-    test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
-    test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    echo "eval \"\$($(brew --prefix)/bin/brew shellenv)\"" >> ~/.bashrc
-}
+apt install build-essential -y
 
-# Check if Homebrew is already installed in the common paths
-if test -d ~/.linuxbrew || test -d /home/linuxbrew/.linuxbrew; then
-    echo "Homebrew is already installed. Adding to shell environment..."
-else
-    install_homebrew
-fi
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Reload the shell configuration
-source ~/.bashrc
+echo >> /home/${USER}/.bashrc
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/phbr/.bashrc
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-echo "Homebrew setup is complete!"
+brew install gcc
+
