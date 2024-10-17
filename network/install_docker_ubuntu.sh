@@ -8,13 +8,16 @@ print_message() {
 # Function to show a progress bar
 show_progress() {
     local duration=$1
-    echo -ne "\033[1;32m["
+    echo -ne "\033[1;32m["  # Green color
     for ((i=0; i<50; i++)); do
-        sleep $(($duration / 50))
+        sleep $(bc <<< "scale=2; $duration / 50")  # Adjust sleep time
         echo -ne "="
     done
-    echo -e "]\033[0m"
+    echo -e "]\033[0m"  # Reset color
 }
+
+# Exit script if any command fails
+set -e
 
 # Update the package index
 print_message "Updating package index..."
@@ -73,13 +76,21 @@ print_message "User added to the docker group."
 
 # Verify Docker installation
 print_message "Verifying Docker installation..."
-docker --version
-print_message "Docker version verified."
+if docker --version > /dev/null 2>&1; then
+    print_message "Docker version: $(docker --version)"
+else
+    echo -e "\033[1;31mDocker installation failed.\033[0m"  # Red error message
+    exit 1
+fi
 
 # Verify installation of Docker Compose (CLI plugin)
 print_message "Verifying installation of Docker Compose (CLI plugin)..."
-docker compose version
-print_message "Docker Compose version verified."
+if docker compose version > /dev/null 2>&1; then
+    print_message "Docker Compose version: $(docker compose version)"
+else
+    echo -e "\033[1;31mDocker Compose installation failed.\033[0m"  # Red error message
+    exit 1
+fi
 
 # Completion message
 print_message "Docker and Docker Compose have been installed successfully."
