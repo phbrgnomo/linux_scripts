@@ -30,12 +30,8 @@ check_status() {
     fi
 }
 
-show_progress() {
-    echo -e "${INFO} $1"
-}
 
 install_docker() {
-    show_progress "Instalando Docker..."
     
     # Removendo versões antigas
     apt-get remove docker docker-engine docker.io containerd runc &> /dev/null
