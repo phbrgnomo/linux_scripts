@@ -22,13 +22,13 @@ set -e
 # Update the package index
 print_message "Updating package index..."
 show_progress 5
-sudo apt-get update -y > /dev/null 2>&1
+apt-get update -y > /dev/null 2>&1
 print_message "Package index updated."
 
 # Install prerequisites for Docker
 print_message "Installing prerequisites for Docker..."
 show_progress 5
-sudo apt-get install -y \
+apt-get install -y \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -39,39 +39,39 @@ print_message "Prerequisites installed."
 # Add Docker’s official GPG key
 print_message "Adding Docker's official GPG key..."
 show_progress 3
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
 print_message "Docker's GPG key added."
 
 # Set up the stable Docker repository
 print_message "Setting up the Docker repository..."
 show_progress 3
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" |  tee /etc/apt/sources.list.d/docker.list > /dev/null
 print_message "Docker repository set up."
 
 # Update the package index again to include Docker's packages
 print_message "Updating package index again for Docker packages..."
 show_progress 5
-sudo apt-get update -y > /dev/null 2>&1
+apt-get update -y > /dev/null 2>&1
 print_message "Package index updated for Docker."
 
 # Install Docker Engine
 print_message "Installing Docker Engine..."
 show_progress 5
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io > /dev/null 2>&1
+apt-get install -y docker-ce docker-ce-cli containerd.io > /dev/null 2>&1
 print_message "Docker Engine installed."
 
 # Start and enable the Docker service
 print_message "Starting Docker service..."
 show_progress 3
-sudo systemctl start docker > /dev/null 2>&1
-sudo systemctl enable docker > /dev/null 2>&1
+systemctl start docker > /dev/null 2>&1
+systemctl enable docker > /dev/null 2>&1
 print_message "Docker service started and enabled."
 
 # Add the current user to the docker group
 print_message "Adding the user to the docker group..."
-sudo usermod -aG docker $USER
+usermod -aG docker $USER
 print_message "User added to the docker group."
 
 # Verify Docker installation
