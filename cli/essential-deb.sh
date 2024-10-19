@@ -79,41 +79,59 @@ install_homebrew() {
 echo -e "\nSelecting APT packages:"
 for package in "${!apt_packages[@]}"; do
     description="${apt_packages[$package]}"
-    while true; do
-        read -p "Install ${package} (${description})? [y/n]: " yn
-        case $yn in
-            [Yy]* )
-                selected_apt_packages+=("$package")
-                break
-                ;;
-            [Nn]* )
-                break
-                ;;
-            * )
-                echo "Please answer y or n"
-                ;;
-        esac
-    done
+    if ! dpkg -s "$package" &> /dev/null; then
+        while true; do
+            read -p "Install ${package} (${description})? [Y/n]: " yn
+            case $yn in
+                [Yy]*|[Nn]*)
+                    if [[ $yn == [Nn]* ]]; then
+                        break
+                    else
+                        selected_apt_packages+=("$package")
+                        break
+                    fi
+                    ;;
+                "")
+                    selected_apt_packages+=("$package")
+                    break
+                    ;;
+                * )
+                    echo "Please answer y or n"
+                    ;;
+            esac
+        done
+    else
+        print_colored "yellow" "${package} is already installed, skipping..."
+    fi
 done
 
 echo -e "\nSelecting Brew packages:"
 for package in "${!brew_packages[@]}"; do
     description="${brew_packages[$package]}"
-    while true; do
-        read -p "Install ${package} (${description})? [y/n]: " yn
-        case $yn in
-            [Yy]* )
-                selected_brew_packages+=("$package")
-                break
-                ;;
-            [Nn]* )
-                break
-                ;;
-            * )
-                echo "Please answer y or n"
-                ;;
-        esac
-    done
+    if ! brew list "$package" &> /dev/null; then
+        while true; do
+            read -p "Install ${package} (${description})? [Y/n]: " yn
+            case $yn in
+                [Yy]*|[Nn]*)
+                    if [[ $yn == [Nn]* ]]; then
+                        break
+                    else
+                        selected_brew_packages+=("$package")
+                        break
+                    fi
+                    ;;
+                "")
+                    selected_brew_packages+=("$package")
+                    break
+                    ;;
+                * )
+                    echo "Please answer y or n"
+                    ;;
+            esac
+        done
+    else
+        print_colored "yellow" "${package} is already installed, skipping..."
+    fi
 done
 
 # Install selected packages
