@@ -1,4 +1,4 @@
-#!/bin/bash
+# !/bin/bash
 
 # Update package list
 sudo apt update
@@ -7,7 +7,7 @@ sudo apt update
 packages=(
     curl
     git
-    
+
     htop
     tree
     build-essential
