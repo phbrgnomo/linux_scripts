@@ -7,12 +7,12 @@ sudo apt update
 packages=(
     curl
     git
-
     htop
     tree
     build-essential
     python3
     python3-pip
+    gh
 )
 
 # Install packages
