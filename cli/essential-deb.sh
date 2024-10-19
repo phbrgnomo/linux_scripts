@@ -57,7 +57,7 @@ install_homebrew() {
         local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
         
         # Exit sudo temporarily to run the Homebrew installation
-        if sudo -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
+        if -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
             
             # Add Homebrew to PATH for the actual user
