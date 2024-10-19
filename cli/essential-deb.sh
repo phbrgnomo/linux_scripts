@@ -57,7 +57,7 @@ install_homebrew() {
         local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
         
         # Exit sudo temporarily to run the Homebrew installation
-        if -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
+        if sudo -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
             
             # Add Homebrew to PATH for the actual user
@@ -178,27 +178,27 @@ fi
 
 
 
-# Install package managers
-# Install brew
-echo "Installing Homebrew..."
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-# Adding brew to .bashrc
-echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/phbr/.bashrc
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# # Install package managers
+# # Install brew
+# echo "Installing Homebrew..."
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# # Adding brew to .bashrc
+# echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/phbr/.bashrc
+# eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 
 
-# Install apt-packages
-for package in "${apt-packages[@]}"; do
-    echo "(Apt-get) Installing $package..."
-    apt install -y "$package"
-done
+# # Install apt-packages
+# for package in "${apt-packages[@]}"; do
+#     echo "(Apt-get) Installing $package..."
+#     apt install -y "$package"
+# done
 
-# Install brew-packages
-for package in "${brew-packages[@]}"; do
-    echo "(Homebrew) Installing $package..."
-    brew install "$package"
-done
+# # Install brew-packages
+# for package in "${brew-packages[@]}"; do
+#     echo "(Homebrew) Installing $package..."
+#     brew install "$package"
+# done
 
 
-echo "All apt-packages installed successfully!"
+# echo "All apt-packages installed successfully!"
