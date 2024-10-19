@@ -7,7 +7,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Get the username of the user who  invoked sudo
-ACTUAL_USER=$(logname || who am i | awk '{print $1}')
+ACTUAL_USER=$(logname || whoami | awk '{print $1}')
 USER_HOME=$(eval echo ~${ACTUAL_USER})
 
 # Update & upgrage packages
@@ -53,10 +53,19 @@ print_colored() {
 install_homebrew() {
     print_colored "yellow" "\nInstalling Homebrew..."
     if ! command -v brew &> /dev/null; then
-        # Install Homebrew as the actual user, not as root
-        su - ${ACTUAL_USER} -c '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-        if [ $? -eq 0 ]; then
+        # Temporarily drop root privileges and run as the actual user
+        local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+        
+        # Exit sudo temporarily to run the Homebrew installation
+        if sudo -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
+            
+            # Add Homebrew to PATH for the actual user
+            if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
+                print_colored "green" "Homebrew added to PATH"
+            fi
         else
             print_colored "red" "Failed to install Homebrew"
             exit 1
