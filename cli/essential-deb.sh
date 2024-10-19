@@ -14,7 +14,7 @@ USER_HOME=$(eval echo ~${ACTUAL_USER})
 echo "Updating package list and upgrading existing packages..."
 apt update && apt upgrade -y
 
-declare -A package=(
+declare -A apt_packages=(
     ["curl"]="Command line tool for transferring data with URLs"
     ["git"]="Distributed version control system"
     ["htop"]="Interactive process viewer"
