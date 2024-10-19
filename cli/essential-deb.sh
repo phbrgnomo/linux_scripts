@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 # Check if script is run as root
 if [ "$EUID" -ne 0 ]; then 
@@ -6,11 +6,18 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Get the username of the user who  invoked sudo
-ACTUAL_USER=$(whoami || logname | awk '{print $1}')
+# Get the username of the user who invoked sudo
+ACTUAL_USER=$(logname || who am i | awk '{print $1}')
 USER_HOME=$(eval echo ~${ACTUAL_USER})
 
-# Update & upgrage packages
+# Update packages gpg keys
+echo "Updating packages gpg keys..."
+mkdir -p /etc/apt/keyrings
+wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+
+# Update & upgrade packages
 echo "Updating package list and upgrading existing packages..."
 apt update && apt upgrade -y
 
@@ -49,33 +56,33 @@ print_colored() {
     esac
 }
 
-# Function to install Homebrew
+# Function to install Homebrew as a non-root user
 install_homebrew() {
     print_colored "yellow" "\nInstalling Homebrew..."
-    if ! command -v brew &> /dev/null; then
+    if ! sudo -u "$ACTUAL_USER" command -v brew &> /dev/null; then
         # Temporarily drop root privileges and run as the actual user
         local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
         
-        # Exit sudo temporarily to run the Homebrew installation
-        if sudo -u ${ACTUAL_USER} bash -c "${install_cmd}"; then
+        # Exit sudo temporarily to run the Homebrew installation as the user
+        if sudo -u "${ACTUAL_USER}" bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
             
             # Add Homebrew to PATH for the actual user
             if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
-                print_colored "green" "Homebrew added to PATH"
+                sudo -u "${ACTUAL_USER}" bash -c 'echo "eval \$($(brew --prefix)/bin/brew shellenv)" >> "$HOME/.profile"'
+                sudo -u "${ACTUAL_USER}" bash -c 'echo "eval \$($(brew --prefix)/bin/brew shellenv)" >> "$HOME/.bashrc"'
+                print_colored "green" "Homebrew added to PATH for ${ACTUAL_USER}"
             fi
         else
             print_colored "red" "Failed to install Homebrew"
             exit 1
         fi
     else
-        print_colored "yellow" "Homebrew is already installed"
+        print_colored "yellow" "Homebrew is already installed for ${ACTUAL_USER}"
     fi
 }
 
-# Ask user about each package
+# Ask user about each APT package
 echo -e "\nSelecting APT packages:"
 for package in "${!apt_packages[@]}"; do
     description="${apt_packages[$package]}"
@@ -105,6 +112,7 @@ for package in "${!apt_packages[@]}"; do
     fi
 done
 
+# Ask user about each Brew package
 echo -e "\nSelecting Brew packages:"
 for package in "${!brew_packages[@]}"; do
     description="${brew_packages[$package]}"
@@ -134,7 +142,7 @@ for package in "${!brew_packages[@]}"; do
     fi
 done
 
-# Install selected packages
+# Install selected APT packages
 if [ ${#selected_apt_packages[@]} -gt 0 ]; then
     print_colored "yellow" "\nInstalling selected APT packages..."
     for package in "${selected_apt_packages[@]}"; do
@@ -147,12 +155,13 @@ if [ ${#selected_apt_packages[@]} -gt 0 ]; then
     done
 fi
 
+# Install selected Brew packages
 if [ ${#selected_brew_packages[@]} -gt 0 ]; then
     install_homebrew
     print_colored "yellow" "\nInstalling selected Brew packages..."
     for package in "${selected_brew_packages[@]}"; do
         print_colored "yellow" "\nInstalling $package..."
-        if su - ${ACTUAL_USER} -c "brew install $package"; then
+        if sudo -u "${ACTUAL_USER}" brew install "$package"; then
             print_colored "green" "$package installed successfully!"
         else
             print_colored "red" "Failed to install $package"
