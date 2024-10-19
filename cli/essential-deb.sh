@@ -7,7 +7,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Get the username of the user who  invoked sudo
-ACTUAL_USER=$(logname || whoami | awk '{print $1}')
+ACTUAL_USER=$(whoami || logname | awk '{print $1}')
 USER_HOME=$(eval echo ~${ACTUAL_USER})
 
 # Update & upgrage packages
