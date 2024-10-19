@@ -1,26 +1,29 @@
 #!/bin/bash
 
-# Check if script is run as root
-if [ "$EUID" -ne 0 ]; then 
-    echo "Please run as root (with sudo)"
+# Check if script is run as root and prevent it
+if [ "$EUID" -eq 0 ]; then 
+    echo "Do not run this script as root or with sudo"
     exit 1
 fi
 
-# Get the username of the user who invoked sudo
-ACTUAL_USER=$(logname || who am i | awk '{print $1}')
+# Get the username and home directory of the current user
+ACTUAL_USER=$(whoami)
 USER_HOME=$(eval echo ~${ACTUAL_USER})
 
 # Update packages gpg keys
 echo "Updating packages gpg keys..."
-mkdir -p /etc/apt/keyrings
+# create keyring folder (requires sudo)
+sudo mkdir -p /etc/apt/keyrings
+# eza keyring
 wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
 echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
-chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
 
-# Update & upgrade packages
+# Update & upgrade packages (requires sudo)
 echo "Updating package list and upgrading existing packages..."
-apt update && apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 
+# Declare packages
 declare -A apt_packages=(
     ["curl"]="Command line tool for transferring data with URLs"
     ["git"]="Distributed version control system"
@@ -56,33 +59,31 @@ print_colored() {
     esac
 }
 
-# Function to install Homebrew as a non-root user
+# Function to install Homebrew
 install_homebrew() {
     print_colored "yellow" "\nInstalling Homebrew..."
-    if ! sudo -u "$ACTUAL_USER" command -v brew &> /dev/null; then
-        # Temporarily drop root privileges and run as the actual user
+    if ! command -v brew &> /dev/null; then
         local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-        
-        # Exit sudo temporarily to run the Homebrew installation as the user
-        if sudo -u "${ACTUAL_USER}" bash -c "${install_cmd}"; then
+        # Run Homebrew installation as actual user (not root)
+        if bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
             
             # Add Homebrew to PATH for the actual user
             if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
-                sudo -u "${ACTUAL_USER}" bash -c 'echo "eval \$($(brew --prefix)/bin/brew shellenv)" >> "$HOME/.profile"'
-                sudo -u "${ACTUAL_USER}" bash -c 'echo "eval \$($(brew --prefix)/bin/brew shellenv)" >> "$HOME/.bashrc"'
-                print_colored "green" "Homebrew added to PATH for ${ACTUAL_USER}"
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
+                print_colored "green" "Homebrew added to PATH"
             fi
         else
             print_colored "red" "Failed to install Homebrew"
             exit 1
         fi
     else
-        print_colored "yellow" "Homebrew is already installed for ${ACTUAL_USER}"
+        print_colored "yellow" "Homebrew is already installed"
     fi
 }
 
-# Ask user about each APT package
+# Ask user about each package
 echo -e "\nSelecting APT packages:"
 for package in "${!apt_packages[@]}"; do
     description="${apt_packages[$package]}"
@@ -112,7 +113,6 @@ for package in "${!apt_packages[@]}"; do
     fi
 done
 
-# Ask user about each Brew package
 echo -e "\nSelecting Brew packages:"
 for package in "${!brew_packages[@]}"; do
     description="${brew_packages[$package]}"
@@ -142,12 +142,12 @@ for package in "${!brew_packages[@]}"; do
     fi
 done
 
-# Install selected APT packages
+# Install selected APT packages (requires sudo)
 if [ ${#selected_apt_packages[@]} -gt 0 ]; then
     print_colored "yellow" "\nInstalling selected APT packages..."
     for package in "${selected_apt_packages[@]}"; do
         print_colored "yellow" "\nInstalling $package..."
-        if apt install -y "$package"; then
+        if sudo apt install -y "$package"; then
             print_colored "green" "$package installed successfully!"
         else
             print_colored "red" "Failed to install $package"
@@ -161,7 +161,7 @@ if [ ${#selected_brew_packages[@]} -gt 0 ]; then
     print_colored "yellow" "\nInstalling selected Brew packages..."
     for package in "${selected_brew_packages[@]}"; do
         print_colored "yellow" "\nInstalling $package..."
-        if sudo -u "${ACTUAL_USER}" brew install "$package"; then
+        if brew install "$package"; then
             print_colored "green" "$package installed successfully!"
         else
             print_colored "red" "Failed to install $package"
@@ -182,8 +182,6 @@ if [ ${#selected_brew_packages[@]} -gt 0 ]; then
     echo "Brew packages installed:"
     printf '%s\n' "${selected_brew_packages[@]}" | sed 's/^/- /'
 fi
-
-
 
 
 
