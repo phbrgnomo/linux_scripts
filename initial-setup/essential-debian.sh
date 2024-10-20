@@ -61,7 +61,7 @@ declare -A apt_packages=(
 )
 
 declare -A brew_packages=(
-    # Add brew packages here
+    ["lazydocker"]="A simple terminal UI for both docker and docker-compose, written in Go with the gocui library."
 )
 
 # Arrays to store selected packages
@@ -228,7 +228,6 @@ while true; do
         [Yy]* | "" )
             echo "Installing Docker..."
             sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install-docker_debian.sh)"
-            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh)"
             break
             ;;
         [Nn]* )
