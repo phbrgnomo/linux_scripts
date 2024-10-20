@@ -3,12 +3,12 @@
 This repository contains a collection of useful scripts for automation and common tasks. The scripts are written in **Python**, **Bash**.
 
 ## Table of Contents
+
 1. [Getting Started](#getting-started)
 2. [Scripts description](./scripts.md)
-2. [Python Environment Setup](#python-environment-setup)
-3. [How to Run Python Scripts](#how-to-run-python-scripts)
-4. [How to Run Bash/Shell Scripts](#how-to-run-bash-shell-scripts)
-5. [Contributing](#contributing)
+3. [Python Environment Setup](#python-environment-setup)
+4. [How to Run Python Scripts](#how-to-run-python-scripts)
+6. [Contributing](#contributing)
 
 ---
 
@@ -21,16 +21,16 @@ If you want to contribue to this project, check the [Python Environment Setup](#
 if you just want to run the scripts from your local client just run the following commands:
 
 **Bash scripts**
-`sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>.sh)"`
+`bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>.sh)"`
 
 **Python scripts**
 `curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>.py | python3`
 NOTE: Check the python package requirements for each script, or use `poetry` to install all packages
 
-
 ### Prerequisites
 
 Before proceeding, make sure you have the following installed on your system:
+
 - Python 3.9+ (verify with `python --version`)
 - Poetry (install instructions below)
 
@@ -51,6 +51,7 @@ For more detailed installation options, refer to [Poetry's official documentatio
 Once you have Poetry installed, follow these steps to set up the Python environment:
 
 1. **Clone the repository**:
+
     ```bash
     git clone https://github.com/your-username/useful-scripts.git
     cd useful-scripts/python
@@ -58,6 +59,7 @@ Once you have Poetry installed, follow these steps to set up the Python environm
 
 2. **Install project dependencies**:
     Inside the `python` directory, run the following command:
+
     ```bash
     poetry install
     ```
@@ -65,6 +67,7 @@ Once you have Poetry installed, follow these steps to set up the Python environm
    This will create a virtual environment and install all the dependencies listed in the `pyproject.toml` file.
 
 3. **Activate the virtual environment** (optional):
+
     ```bash
     poetry shell
     ```
@@ -115,7 +118,8 @@ Contributions are welcome! Please follow these steps to contribute:
 4. Push to the branch (`git push origin feature-branch`).
 5. Open a Pull Request.
 
-### Key sections:
+### Key sections
+
 - **Project Structure**: Shows how the project is organized, with directories for Python, Bash, and Shell scripts.
 - **Getting Started**: Provides instructions for cloning the repo and setting up the environment using **Poetry**.
 - **Python Environment Setup**: Step-by-step guide to install dependencies and run Python scripts.
