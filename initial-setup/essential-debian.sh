@@ -222,7 +222,6 @@ fi
 
 # Docker installation
 # https://docs.docker.com/engine/install/debian/
-
 while true; do
     read -p "Install Docker? [Y/n]: " response
     case $response in
@@ -230,6 +229,28 @@ while true; do
             echo "Installing Docker..."
             sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install-docker_debian.sh)"
             curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+            break
+            ;;
+        [Nn]* )
+            break
+            ;;
+        * )
+            echo "Please answer y or n"
+            ;;
+    esac
+done
+
+# Miniconda installation
+
+
+while true; do
+    read -p "Install Miniconda? [Y/n]: " response
+    case $response in
+        [Yy]* | "" )
+            echo "Installing Miniconda..."
+            wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            bash Miniconda3-latest-Linux-x86_64.sh
+            rm Miniconda3-latest-Linux-x86_64.sh
             break
             ;;
         [Nn]* )
