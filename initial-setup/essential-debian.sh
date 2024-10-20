@@ -228,7 +228,7 @@ while true; do
         [Yy]* | "" )
             echo "Installing Docker..."
             sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install-docker_debian.sh)"
-            curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash"
             break
             ;;
         [Nn]* )
