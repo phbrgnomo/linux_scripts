@@ -30,7 +30,7 @@ echo "Updating packages gpg keys..."
 # create keyring folder (requires sudo)
 sudo mkdir -p /etc/apt/keyrings
 # eza keyring
-wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg
 echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
 sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
 
@@ -73,16 +73,15 @@ install_homebrew() {
     print_colored "yellow" "\nInstalling Homebrew..."
     if ! command -v brew &> /dev/null; then
         local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+        # Add Homebrew to PATH for the actual user
+        if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+            echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
+            echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
+            print_colored "green" "Homebrew added to PATH"
+        fi
         # Run Homebrew installation as actual user (not root)
         if bash -c "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
-            
-            # Add Homebrew to PATH for the actual user
-            if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
-                print_colored "green" "Homebrew added to PATH"
-            fi
         else
             print_colored "red" "Failed to install Homebrew"
             exit 1
@@ -227,7 +226,7 @@ while true; do
     case $response in
         [Yy]* | "" )
             echo "Installing Docker..."
-            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install-docker_debian.sh)"
+            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install_docker_debian.sh)"
             break
             ;;
         [Nn]* )

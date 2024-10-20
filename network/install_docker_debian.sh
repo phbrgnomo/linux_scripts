@@ -36,7 +36,7 @@ print_message "Prerequisites installed."
 # Add Docker’s official GPG key
 print_message "Adding Docker's official GPG key..."
 show_progress 3
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor --yes -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null 2>&1
 print_message "Docker's GPG key added."
 
 # Set up the stable Docker repository
