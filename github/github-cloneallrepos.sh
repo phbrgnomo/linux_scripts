@@ -52,7 +52,7 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
 
   # Get repository information
   repo_info=$(gh repo view "$cleaned_repo" --json isPrivate,isFork -q '.isPrivate, .isFork')
-  IFS=',' read -r is_private is_fork <<< "$repo_info"
+  IFS=',' read -r is_private <<< "$repo_info"
 
   # Set the appropriate destination folder
   if [ "$is_private" = "true" ]; then

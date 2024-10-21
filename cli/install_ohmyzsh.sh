@@ -26,21 +26,21 @@ if [[ "$SHELL" != *"/zsh" ]]; then
 
     # Install Powerlevel10k theme
     print_message "Cloning Powerlevel10k theme..."
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM/themes/powerlevel10k"
 
     # Install useful plugins
     print_message "Cloning plugins..."
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
-    git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions
-    git clone https://github.com/MichaelAquilina/zsh-you-should-use.git $ZSH_CUSTOM/plugins/you-should-use
-    git clone https://github.com/autoenv/autoenv.git $ZSH_CUSTOM/plugins/autoenv
-    git clone https://github.com/colored-man-pages/colored-man-pages.git $ZSH_CUSTOM/plugins/colored-man-pages
-    git clone https://github.com/Colorize/colorize.git $ZSH_CUSTOM/plugins/colorize
-    git clone https://github.com/command-not-found/command-not-found.git $ZSH_CUSTOM/plugins/command-not-found
-    git clone https://github.com/joelcoulter/gitignore.git $ZSH_CUSTOM/plugins/gitignore
-    git clone https://github.com/jasonm23/jsontools.git $ZSH_CUSTOM/plugins/jsontools
-    git clone https://github.com/pschmitt/poetry-zsh-plugin.git $ZSH_CUSTOM/plugins/poetry
-    git clone https://github.com/junegunn/fzf.git $ZSH_CUSTOM/plugins/fzf
+    git clone "https://github.com/zsh-users/zsh-syntax-highlighting.git" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+    git clone "https://github.com/zsh-users/zsh-autosuggestions.git" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+    git clone "https://github.com/MichaelAquilina/zsh-you-should-use.git" "$ZSH_CUSTOM/plugins/you-should-use"
+    git clone "https://github.com/autoenv/autoenv.git" "$ZSH_CUSTOM/plugins/autoenv"
+    git clone "https://github.com/colored-man-pages/colored-man-pages.git" "$ZSH_CUSTOM/plugins/colored-man-pages"
+    git clone "https://github.com/Colorize/colorize.git" "$ZSH_CUSTOM/plugins/colorize"
+    git clone "https://github.com/command-not-found/command-not-found.git" "$ZSH_CUSTOM/plugins/command-not-found"
+    git clone "https://github.com/joelcoulter/gitignore.git" "$ZSH_CUSTOM/plugins/gitignore"
+    git clone "https://github.com/jasonm23/jsontools.git" "$ZSH_CUSTOM/plugins/jsontools"
+    git clone "https://github.com/pschmitt/poetry-zsh-plugin.git" "$ZSH_CUSTOM/plugins/poetry"
+    git clone "https://github.com/junegunn/fzf.git" "$ZSH_CUSTOM/plugins/fzf"
 
     # Update .zshrc to use the Powerlevel10k theme and plugins
     print_message "Updating .zshrc configuration..."

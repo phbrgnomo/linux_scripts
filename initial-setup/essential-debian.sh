@@ -15,7 +15,7 @@ sudo nala fetch --auto
 
 # Get the username and home directory of the current user
 ACTUAL_USER=$(whoami)
-USER_HOME=$(eval echo ~${ACTUAL_USER})
+# USER_HOME=$(eval echo ~${ACTUAL_USER})
 
 print_colored() {
     local color=$1
@@ -75,12 +75,14 @@ declare -a selected_brew_packages=()
 install_homebrew() {
     print_colored "yellow" "\nInstalling Homebrew..."
     if ! command -v brew &> /dev/null; then
-        local install_cmd='/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+        local install_cmd="/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
         # Add Homebrew to PATH for the actual user
         if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
-            echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.profile"
-            echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "/home/${ACTUAL_USER}/.bashrc"
+            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.profile"
+            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.bashrc"
             print_colored "green" "Homebrew added to PATH"
+        fi
+
         fi
         # Run Homebrew installation as actual user (not root)
         if bash -c "${install_cmd}"; then

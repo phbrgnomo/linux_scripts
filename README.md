@@ -8,7 +8,7 @@ This repository contains a collection of useful scripts for automation and commo
 2. [Scripts description](./scripts.md)
 3. [Python Environment Setup](#python-environment-setup)
 4. [How to Run Python Scripts](#how-to-run-python-scripts)
-6. [Contributing](#contributing)
+5. [Contributing](#contributing)
 
 ---
 

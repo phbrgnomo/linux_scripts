@@ -71,7 +71,7 @@ print_message "Docker service started and enabled."
 
 # Add the current user to the docker group
 print_message "Adding the user to the docker group..."
-sudo usermod -aG docker $USER
+sudo "usermod -aG docker $USER"
 print_message "User added to the docker group."
 
 # Verify Docker installation
