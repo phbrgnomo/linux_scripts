@@ -8,7 +8,10 @@ fi
 
 # Minimal packages
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y wget curl build-essential
+sudo apt install -y wget curl build-essential nala
+
+# Update best mirrors
+sudo nala fetch --auto
 
 # Get the username and home directory of the current user
 ACTUAL_USER=$(whoami)
@@ -36,7 +39,7 @@ sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.lis
 
 # Update & upgrade packages (requires sudo)
 echo "Updating package list and upgrading existing packages..."
-sudo apt update && sudo apt upgrade -y
+sudo nala update && sudo nala upgrade --full -y
 
 # Declare packages
 declare -A apt_packages=(
@@ -197,7 +200,7 @@ if [ ${#selected_apt_packages[@]} -gt 0 ]; then
     print_colored "yellow" "\nInstalling selected APT packages..."
     for package in "${selected_apt_packages[@]}"; do
         print_colored "yellow" "\nInstalling $package..."
-        if sudo apt install -y "$package"; then
+        if sudo nala install -y "$package"; then
             print_colored "green" "$package installed successfully!"
         else
             print_colored "red" "Failed to install $package"
