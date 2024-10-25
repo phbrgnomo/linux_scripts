@@ -71,7 +71,6 @@ declare -A apt_packages=(
     ["bpytop"]="Terminal-based resource monitor"
     ["tldr"]="Simpler man pages"
     ["duf"]="Disk usage statistics"
-    ["zsh"]="The Z shell (zsh)"
     ["neofetch"]="Shows system information in terminal"
     ["python3"]="High-level programming language"
     ["python3-pip"]="Package installer for Python"
@@ -246,6 +245,22 @@ if [ ${#selected_brew_packages[@]} -gt 0 ]; then
         fi  
     done  
 fi  
+
+# Docker installation with logging and cleanup after installation [changed]
+while true; do  
+    read -p "Install Oh My Zsh and Oh my Posh? [Y/n]: " response  
+    case $response in  
+        [Yy]* | "" )  
+            log_message "Installing Docker..." # [changed]
+            echo "Installing Docker..."  
+            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install_docker_debian.sh)" || { log_message "Failed to install Docker."; continue; } # Log failure [changed]
+            break ;;  
+        [Nn]* )  
+            break ;;  
+        * )  
+            echo "Please answer y or n" ;;  
+    esac  
+done  
 
 # Docker installation with logging and cleanup after installation [changed]
 while true; do  
