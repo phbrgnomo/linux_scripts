@@ -11,7 +11,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y wget curl build-essential nala
 
 # Update best mirrors
-sudo nala fetch --auto
+    read -p "Fetch best mirrors now?? (Y/n): " resposta
+    if [[ "$resposta" == "s" || "$resposta" == "Y" ]]; then
+        echo "Updating mirrors..."
+        sudo nala fetch --auto
+    else
+        echo "Skipping mirrors update."
+    fi
 
 # Get the username and home directory of the current user
 ACTUAL_USER=$(whoami)
@@ -80,31 +86,47 @@ declare -a selected_apt_packages=()
 declare -a selected_brew_packages=()
 
 # Function to install Homebrew
+/*************  ✨ Codeium Command 🌟  *************/
 install_homebrew() {
+    log_message "Starting Homebrew installation..."
+    print_colored "yellow" "Installing Homebrew..."
+
     log_message "Installing Homebrew..." # [changed]
     print_colored "yellow" "\nInstalling Homebrew..."
     if ! command -v brew &> /dev/null; then
+        local install_command="/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
         local install_cmd="/bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-        # Add Homebrew to PATH for the actual user
-        if [[ -f "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
-            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.profile"
-            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.bashrc"
-            print_colored "green" "Homebrew added to PATH"
-        fi
         
+        if eval "${install_command}"; then
+            print_colored "green" "Homebrew installation succeeded!"
+            log_message "Homebrew installation completed successfully."
         # Run Homebrew installation as actual user (not root)
-        if bash -c "${install_cmd}"; then
+        if eval "${install_cmd}"; then
             print_colored "green" "Homebrew installed successfully!"
             log_message "Homebrew installed successfully!" # [changed]
+
+            local brew_shellenv="/home/linuxbrew/.linuxbrew/bin/brew shellenv"
+            echo "eval \"\$(${brew_shellenv})\"" >> "/home/${ACTUAL_USER}/.profile"
+            echo "eval \"\$(${brew_shellenv})\"" >> "/home/${ACTUAL_USER}/.bashrc"
+            # Add Homebrew to PATH for the actual user
+            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.profile"
+            echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> "/home/${ACTUAL_USER}/.bashrc"
+            # Source the new profile or bashrc to update the current session
+            source "/home/${ACTUAL_USER}/.bashrc"
+
         else
+            print_colored "red" "Homebrew installation failed."
+            log_message "Failed to install Homebrew."
             print_colored "red" "Failed to install Homebrew"
             log_message "Failed to install Homebrew" # [changed]
             exit 1
         fi
     else
+        print_colored "yellow" "Homebrew is already installed."
         print_colored "yellow" "Homebrew is already installed"
     fi
 }
+/******  654a477c-a79c-4db7-9ef9-b359d3928cda  *******/
 
 # Function to clean up temporary files [changed]
 cleanup() {
