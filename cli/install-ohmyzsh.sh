@@ -58,7 +58,7 @@ if [[ "$SHELL" != *"/zsh" ]]; then
         "zsh-users/zsh-syntax-highlighting"
         "zsh-users/zsh-autosuggestions"
         "MichaelAquilina/zsh-you-should-use"
-        "Tarrasch/autoenv"
+        "Tarrasch/zsh-autoenv"
         "colored-man-pages/colored-man-pages"
         "Colorize/colorize"
         "command-not-found/command-not-found"
