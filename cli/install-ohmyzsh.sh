@@ -41,6 +41,7 @@ sudo nala install -y curl git zsh
 if [[ "$SHELL" != *"/zsh" ]]; then
     # Install Oh My Zsh without switching shell or prompting
     print_message "Installing Oh My Zsh..."
+    rm -rf ~/.oh-my-zsh
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
     check_command_success "Oh My Zsh installation"
 
@@ -58,7 +59,6 @@ if [[ "$SHELL" != *"/zsh" ]]; then
         "zsh-users/zsh-syntax-highlighting"
         "zsh-users/zsh-autosuggestions"
         "MichaelAquilina/zsh-you-should-use"
-        "colored-man-pages/colored-man-pages"
         "Colorize/colorize"
         "command-not-found/command-not-found"
         "joelcoulter/gitignore"
@@ -70,6 +70,11 @@ if [[ "$SHELL" != *"/zsh" ]]; then
         git clone "https://github.com/${plugin}.git" "$ZSH_CUSTOM/plugins/${plugin##*/}"
         check_command_success "Cloning ${plugin##*/} plugin"
     done
+
+    # Update .zshrc to use the Powerlevel10k theme and plugins
+print_message "Updating .zshrc configuration..."
+sed -i 's/plugins=(git)/plugins=(git colorize colored-man-pages command-not-found gitignore jsontools pip poetry themes zsh-autosuggestions you-should-use fzf)/g' ~/.zshrc
+
 
     # Install Oh My Posh
     print_message "Installing Oh My Posh..."
