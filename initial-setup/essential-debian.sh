@@ -74,6 +74,9 @@ declare -A apt_packages=(
     ["neofetch"]="Shows system information in terminal"
     ["python3"]="High-level programming language"
     ["python3-pip"]="Package installer for Python"
+    ["gdu"]="Disk usage statistics"
+    ["speedtest-cli"]="Speedtest CLI tool"
+    ["lolcat"]="Rainbow colored terminal output"
 )
 
 declare -A brew_packages=(
