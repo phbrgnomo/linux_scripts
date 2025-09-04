@@ -6,11 +6,35 @@ GREEN='\033[0;32m'  # Green color for successes
 YELLOW='\033[1;33m' # Yellow color for progress
 NC='\033[0m'        # No color (reset)
 
+# Check if required tools are installed
+check_dependencies() {
+    local missing_tools=()
+    
+    if ! command -v gh &> /dev/null; then
+        missing_tools+=("gh")
+    fi
+    
+    if ! command -v jq &> /dev/null; then
+        missing_tools+=("jq")
+    fi
+    
+    if [ ${#missing_tools[@]} -gt 0 ]; then
+        echo -e "${RED}Missing required tools: ${missing_tools[*]}${NC}"
+        echo "Please install the missing tools and try again."
+        echo "For gh: https://cli.github.com/"
+        echo "For jq: sudo apt install jq"
+        exit 1
+    fi
+}
+
 # Check if a destination folder argument is provided
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 <destination_folder>"
   exit 1
 fi
+
+# Check dependencies first
+check_dependencies
 
 # Set the destination folder from the command line argument
 dest_folder="$1"
@@ -51,8 +75,8 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
   fi
 
   # Get repository information
-  repo_info=$(gh repo view "$cleaned_repo" --json isPrivate,isFork -q '.isPrivate, .isFork')
-  IFS=',' read -r is_private <<< "$repo_info"
+  repo_info=$(gh repo view "$cleaned_repo" --json isPrivate,isFork -q '.isPrivate')
+  is_private="$repo_info"
 
   # Set the appropriate destination folder
   if [ "$is_private" = "true" ]; then

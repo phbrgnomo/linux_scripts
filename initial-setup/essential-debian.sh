@@ -249,14 +249,14 @@ if [ ${#selected_brew_packages[@]} -gt 0 ]; then
     done  
 fi  
 
-# Docker installation with logging and cleanup after installation [changed]
+# Oh My Zsh and Oh My Posh installation
 while true; do  
-    read -p "Install Oh My Zsh and Oh my Posh? [Y/n]: " response  
+    read -p "Install Oh My Zsh and Oh My Posh? [Y/n]: " response  
     case $response in  
         [Yy]* | "" )  
-            log_message "Installing Docker..." # [changed]
-            echo "Installing Docker..."  
-            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/network/install_docker_debian.sh)" || { log_message "Failed to install Docker."; continue; } # Log failure [changed]
+            log_message "Installing Oh My Zsh and Oh My Posh..." # [changed]
+            echo "Installing Oh My Zsh and Oh My Posh..."  
+            sudo bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/cli/install-ohmyzsh.sh)" || { log_message "Failed to install Oh My Zsh and Oh My Posh."; continue; } # Log failure [changed]
             break ;;  
         [Nn]* )  
             break ;;  

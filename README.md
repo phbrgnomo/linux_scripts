@@ -21,10 +21,10 @@ If you want to contribue to this project, check the [Python Environment Setup](#
 if you just want to run the scripts from your local client just run the following commands:
 
 **Bash scripts**
-`bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>.sh)"`
+`bash -c "$(curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>)"`
 
 **Python scripts**
-`curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path>.py | python3`
+`curl -sL https://raw.githubusercontent.com/phbrgnomo/linux_scripts/refs/heads/main/<script_path> | python3`
 NOTE: Check the python package requirements for each script, or use `poetry` to install all packages
 
 ### Prerequisites
@@ -53,12 +53,12 @@ Once you have Poetry installed, follow these steps to set up the Python environm
 1. **Clone the repository**:
 
     ```bash
-    git clone https://github.com/your-username/useful-scripts.git
-    cd useful-scripts/python
+    git clone https://github.com/phbrgnomo/linux_scripts.git
+    cd linux_scripts
     ```
 
 2. **Install project dependencies**:
-    Inside the `python` directory, run the following command:
+    Inside the repository directory, run the following command:
 
     ```bash
     poetry install

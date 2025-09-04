@@ -44,6 +44,9 @@ if [[ "$SHELL" != *"/zsh" ]]; then
     rm -rf ~/.oh-my-zsh
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
+    # Set ZSH_CUSTOM variable
+    export ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
+
     # Install useful plugins
     print_message "Cloning plugins..."
     plugins=(
@@ -70,7 +73,7 @@ if [[ "$SHELL" != *"/zsh" ]]; then
     if [[ "$install_choice" == "yes" ]]; then
         # Download all themes
         mkdir -p ~/.poshthemes/
-        cd .~/.poshthemes/
+        cd ~/.poshthemes/
 
         for theme in $(curl -s https://api.github.com/repos/JanDeDobbeleer/oh-my-posh/contents/themes | jq -r '.[].name'); do
             curl -O https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/$theme
@@ -86,20 +89,19 @@ if [[ "$SHELL" != *"/zsh" ]]; then
     echo "To change the theme, use the following command:"
     echo "oh-my-posh --config '/home/yourusername/.poshthemes/<Theme_Name>.omp.json'"
     echo "Replace <ThemeName> with the name of the theme you want to use."
-    echo "Ass 'eval "$(oh-my-posh init zsh --config ~/.poshthemes/<Theme_Name>.omp.json)"' to ~/.zshrc to persist the chosen theme"
+    echo "Add 'eval \"\$(oh-my-posh init zsh --config ~/.poshthemes/<Theme_Name>.omp.json)\"' to ~/.zshrc to persist the chosen theme"
 
-
-# Add Oh My Posh initialization to .zshrc
+    # Add Oh My Posh initialization to .zshrc
     print_message "Adding Oh My Posh initialization to ~/.zshrc..."
     echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
     check_command_success "Adding Oh My Posh initialization to .zshrc"
 
-    # # Change default shell to Zsh
-    # print_message "Changing default shell to Zsh..."
-#     # chsh -s "$(which zsh)"
-# else
-#     print_message "Zsh is already set as the default shell."
-# fi
+    # Change default shell to Zsh
+    print_message "Changing default shell to Zsh..."
+    chsh -s "$(which zsh)"
+else
+    print_message "Zsh is already set as the default shell."
+fi
 
 # Inform the user about the completion of the installation
 print_message "Installation completed successfully!"
