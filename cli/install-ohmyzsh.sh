@@ -56,8 +56,18 @@ if [[ "$SHELL" != *"/zsh" ]]; then
         "junegunn/fzf"
     )
     for plugin in "${plugins[@]}"; do
-        git clone "https://github.com/${plugin}.git" "$ZSH_CUSTOM/plugins/${plugin##*/}"
-        check_command_success "Cloning ${plugin##*/} plugin"
+        plugin_name="${plugin##*/}"
+        plugin_dir="$ZSH_CUSTOM/plugins/$plugin_name"
+        if [ ! -d "$plugin_dir" ]; then
+            echo "Cloning $plugin_name plugin..."
+            if git clone "https://github.com/${plugin}.git" "$plugin_dir"; then
+                check_command_success "Cloning ${plugin_name} plugin"
+            else
+                print_message "Failed to clone ${plugin_name} plugin, continuing..."
+            fi
+        else
+            print_message "${plugin_name} plugin already exists, skipping..."
+        fi
     done
 
     # Install Oh My Posh

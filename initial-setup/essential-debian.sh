@@ -11,13 +11,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y wget curl build-essential nala
 
 # Update best mirrors
-    read -p "Fetch best mirrors now?? (Y/n): " resposta
-    if [[ "$resposta" == "s" || "$resposta" == "Y" ]]; then
-        echo "Updating mirrors..."
-        sudo nala fetch --auto
-    else
-        echo "Skipping mirrors update."
-    fi
+read -p "Fetch best mirrors now? (Y/n): " resposta
+if [[ "$resposta" =~ ^[Yy]$ || "$resposta" == "" ]]; then
+    echo "Updating mirrors..."
+    sudo nala fetch --auto
+else
+    echo "Skipping mirrors update."
+fi
 
 # Get the username and home directory of the current user
 ACTUAL_USER=$(whoami)
