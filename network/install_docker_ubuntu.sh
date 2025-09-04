@@ -10,7 +10,9 @@ show_progress() {
     local duration=$1
     echo -ne "\033[1;32m["  # Green color
     for ((i=0; i<50; i++)); do
-        sleep $(bc <<< "scale=2; $duration / 50")  # Adjust sleep time
+        # Use a simple calculation instead of bc for better compatibility
+        sleep_duration=$(( duration * 10 / 500 ))  # Convert to deciseconds and divide
+        sleep 0.1  # Sleep for 100ms instead of using bc
         echo -ne "="
     done
     echo -e "]\033[0m"  # Reset color
@@ -71,7 +73,7 @@ print_message "Docker service started and enabled."
 
 # Add the current user to the docker group
 print_message "Adding the user to the docker group..."
-sudo "usermod -aG docker $USER"
+sudo usermod -aG docker "$USER"
 print_message "User added to the docker group."
 
 # Verify Docker installation

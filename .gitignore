@@ -175,5 +175,8 @@ pyrightconfig.json
 
 ai-*
 
+# Development and validation tools
+validate_scripts.sh
+
 # End of https://www.toptal.com/developers/gitignore/api/python
 
