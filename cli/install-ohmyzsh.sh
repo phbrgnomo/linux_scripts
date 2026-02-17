@@ -38,10 +38,10 @@ print_message "Installing required packages: curl, git, and zsh..."
 sudo nala install -y curl git
 
 # Check if Zsh is set as the default shell
-if [[ "$SHELL" != *"/zsh" ]]; then
+if [[ "$SHELL" != */zsh ]]; then
     # Install Oh My Zsh without switching shell or prompting
     print_message "Installing Oh My Zsh..."
-    rm -rf ~/.oh-my-zsh
+    rm -rf "$HOME/.oh-my-zsh"
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
     # Install useful plugins
@@ -53,53 +53,50 @@ if [[ "$SHELL" != *"/zsh" ]]; then
         "junegunn/fzf"
     )
     for plugin in "${plugins[@]}"; do
-        git clone "https://github.com/${plugin}.git" "$ZSH_CUSTOM/plugins/${plugin##*/}"
-        check_command_success "Cloning ${plugin##*/} plugin"
+        git clone "https://github.com/${plugin}.git" "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/${plugin##*/}" || check_command_success "Cloning ${plugin##*/} plugin"
     done
 
     # Install Oh My Posh
     print_message "Installing Oh My Posh..."
     sudo curl -s https://ohmyposh.dev/install.sh | bash -s
     check_command_success "Oh My Posh installation"
-    export PATH=$PATH:~/.local/bin
+    export PATH="$PATH:$HOME/.local/bin"
 
     # Prompt the user to install all themes
-
-    read -p "Do you want to download and install all Oh My Posh themes? (yes/no): " install_choice
+    read -r -p "Do you want to download and install all Oh My Posh themes? (yes/no): " install_choice
 
     if [[ "$install_choice" == "yes" ]]; then
-        # Download all themes
-        mkdir -p ~/.poshthemes/
-        cd .~/.poshthemes/
-
+        mkdir -p "$HOME/.poshthemes"
+        pushd "$HOME/.poshthemes" >/dev/null || exit 1
         for theme in $(curl -s https://api.github.com/repos/JanDeDobbeleer/oh-my-posh/contents/themes | jq -r '.[].name'); do
-            curl -O https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/$theme
-            check_command_success "Downloading theme: $theme"
+            curl -s -O "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/$theme" || check_command_success "Downloading theme: $theme"
         done
+        popd >/dev/null || true
         echo "All Oh My Posh themes downloaded successfully."
-        cd ..
     else
         echo "You can check all available themes at: https://github.com/JanDeDobbeleer/oh-my-posh/tree/main/themes"
     fi
 
     # Print the command to change the theme
     echo "To change the theme, use the following command:"
-    echo "oh-my-posh --config '/home/yourusername/.poshthemes/<Theme_Name>.omp.json'"
-    echo "Replace <ThemeName> with the name of the theme you want to use."
-    echo "Ass 'eval "$(oh-my-posh init zsh --config ~/.poshthemes/<Theme_Name>.omp.json)"' to ~/.zshrc to persist the chosen theme"
+    echo "oh-my-posh --config \"$HOME/.poshthemes/<Theme_Name>.omp.json\""
+    echo "Replace <Theme_Name> with the name of the theme you want to use."
+    echo "Add the following to ~/.zshrc to persist the chosen theme:"
+    # shellcheck disable=SC2016
+    echo 'eval "$(oh-my-posh init zsh --config ~/.poshthemes/<Theme_Name>.omp.json)"'
 
-
-# Add Oh My Posh initialization to .zshrc
+    # Add Oh My Posh initialization to .zshrc
     print_message "Adding Oh My Posh initialization to ~/.zshrc..."
-    echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
+    # shellcheck disable=SC2016
+    echo 'eval "$(oh-my-posh init zsh)"' >> "$HOME/.zshrc"
     check_command_success "Adding Oh My Posh initialization to .zshrc"
 
-    # # Change default shell to Zsh
+    # Optionally change default shell to zsh (commented out by default)
     # print_message "Changing default shell to Zsh..."
-#     # chsh -s "$(which zsh)"
-# else
-#     print_message "Zsh is already set as the default shell."
-# fi
+    # chsh -s "$(which zsh)"
+else
+    print_message "Zsh is already set as the default shell."
+fi
 
 # Inform the user about the completion of the installation
 print_message "Installation completed successfully!"

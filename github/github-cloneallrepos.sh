@@ -21,7 +21,7 @@ mkdir -p "$dest_folder/public" "$dest_folder/private"
 # Log file for unsuccessful operations
 log_file="$dest_folder/operation_log.log"
 echo "Creating log file..."
-echo "Operation Log - $(date)" > "$log_file"
+echo "Operation Log - $(date)" >"$log_file"
 
 # Count the total number of repositories
 total_repos=$(gh repo list --limit 1000 | wc -l)
@@ -43,16 +43,16 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
   cleaned_repo=$(echo "$repo" | awk '{$1=$1; print $1}')
 
   # Check if the remote repo exists by using `gh repo view` to confirm
-  if ! gh repo view "$cleaned_repo" &> /dev/null; then
+  if ! gh repo view "$cleaned_repo" &>/dev/null; then
     echo -e "${RED}Remote repository $cleaned_repo has been deleted or does not exist.${NC}" | tee -a "$log_file"
     progress=$((progress + 1))
     printf "\r${YELLOW}Progress: [%d/%d]${NC}\n" "$progress" "$total_repos"
-    continue  # Skip this repository and move to the next
+    continue # Skip this repository and move to the next
   fi
 
   # Get repository information
   repo_info=$(gh repo view "$cleaned_repo" --json isPrivate,isFork -q '.isPrivate, .isFork')
-  IFS=',' read -r is_private <<< "$repo_info"
+  IFS=',' read -r is_private <<<"$repo_info"
 
   # Set the appropriate destination folder
   if [ "$is_private" = "true" ]; then
@@ -72,7 +72,10 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
 
     # Check if it is indeed a git repository
     if [ -d "$dest/$repo_name/.git" ]; then
-      cd "$dest/$repo_name" || { echo -e "${RED}Failed to enter directory $repo_name${NC}" | tee -a "$log_file"; continue; }
+      cd "$dest/$repo_name" || {
+        echo -e "${RED}Failed to enter directory $repo_name${NC}" | tee -a "$log_file"
+        continue
+      }
 
       # Pull latest changes and capture the output
       pull_output=$(git pull --quiet 2>&1)
@@ -80,12 +83,12 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
 
       if [ $pull_status -ne 0 ]; then
         echo -e "${RED}Error pulling changes for $repo_name: $pull_output${NC}" | tee -a "$log_file"
-        
+
         # Check for merge conflicts
         if [[ "$pull_output" == *"CONFLICT"* ]]; then
           echo -e "${RED}Merge conflict detected in $repo_name. Please resolve it manually.${NC}" | tee -a "$log_file"
-          git merge --abort  # Abort the merge to keep the repo clean
-          echo "$repo_name has a merge conflict. Please resolve it manually." >> "$log_file"
+          git merge --abort # Abort the merge to keep the repo clean
+          echo "$repo_name has a merge conflict. Please resolve it manually." >>"$log_file"
         else
           echo -e "${RED}An error occurred while pulling for $repo_name: $pull_output${NC}" | tee -a "$log_file"
         fi
@@ -93,7 +96,7 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
         echo -e "${GREEN}Successfully pulled latest changes for $repo_name.${NC}"
       fi
 
-      cd - > /dev/null || { echo -e "${RED}Failed to return to the previous directory${NC}" | tee -a "$log_file"; }
+      cd - >/dev/null || { echo -e "${RED}Failed to return to the previous directory${NC}" | tee -a "$log_file"; }
     else
       echo -e "${RED}$repo_name already exists but is not a git repository. Skipping this repository.${NC}" | tee -a "$log_file"
     fi
@@ -109,17 +112,21 @@ gh repo list --limit 1000 | while IFS= read -r repo; do
       continue
     fi
 
-    cd "$dest/$repo_name" || { echo -e "${RED}Failed to enter directory $repo_name${NC}"; continue; }
+    cd "$dest/$repo_name" || {
+      echo -e "${RED}Failed to enter directory $repo_name${NC}"
+      continue
+    }
     echo "Pulling latest changes for $repo_name..."
-    
+
     pull_output=$(git pull --quiet 2>&1)
-    if [ $? -ne 0 ]; then
+    pull_status=$?
+    if [ $pull_status -ne 0 ]; then
       echo -e "${RED}Failed to pull for $repo_name: $pull_output${NC}" | tee -a "$log_file"
     else
       echo -e "${GREEN}Successfully pulled latest changes for $repo_name.${NC}"
     fi
 
-    cd - > /dev/null || { echo -e "${RED}Failed to return to the previous directory${NC}" | tee -a "$log_file"; }
+    cd - >/dev/null || { echo -e "${RED}Failed to return to the previous directory${NC}" | tee -a "$log_file"; }
   fi
 
   # Update the progress
