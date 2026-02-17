@@ -7,18 +7,67 @@ set -euo pipefail
 # issue no final do arquivo local.
 # Este script é interativo: pergunta pelo diretório contendo os arquivos .md.
 
-REPO="phbrgnomo/Analise-financeira-B3"
+DEFAULT_REPO="phbrgnomo/Analise-financeira-B3"
 DEFAULT_DIR="docs/implementation-artifacts"
+
+# Valores podem vir do ambiente ou de flags (veja abaixo)
+REPO="${REPO:-$DEFAULT_REPO}"
+DIR="${DIR:-}"
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "gh CLI não encontrado. Autentique e instale gh antes de executar." >&2
   exit 1
 fi
 
-# Pergunta ao usuário pelo diretório que contém os arquivos .md (aceita vazio)
-printf "Diretório com arquivos .md para sincronizar (padrão: %s): " "$DEFAULT_DIR"
-read -r DIR_INPUT
-DIR="${DIR_INPUT:-$DEFAULT_DIR}"
+usage() {
+  cat <<EOF
+Uso: $0 [OPÇÕES]
+  -r, --repo REPO    Repositório destino (ex: owner/repo). Pode vir também da var REPO
+  -d, --dir DIR      Diretório com arquivos .md. Pode vir também da var DIR
+  -y, --yes          Não interativo (usa valores padrão/fornecidos)
+  -h, --help         Mostrar esta ajuda
+EOF
+}
+
+# Parse args simples (suporta long opts)
+NONINTERACTIVE=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -r|--repo)
+      REPO="$2"
+      shift 2
+      ;;
+    -d|--dir)
+      DIR="$2"
+      shift 2
+      ;;
+    -y|--yes)
+      NONINTERACTIVE=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# Se DIR não veio por env/flag, perguntar (salvo modo non-interactive)
+if [ -z "${DIR:-}" ]; then
+  if [ "$NONINTERACTIVE" -eq 1 ]; then
+    DIR="$DEFAULT_DIR"
+  else
+    printf "Diretório com arquivos .md para sincronizar (padrão: %s): " "$DEFAULT_DIR"
+    read -r DIR_INPUT
+    DIR="${DIR_INPUT:-$DEFAULT_DIR}"
+  fi
+fi
+
+# Se REPO não definido, usar padrão
+REPO="${REPO:-$DEFAULT_REPO}"
 
 if [ ! -d "$DIR" ]; then
   echo "Diretório '$DIR' não encontrado. Verifique o caminho e tente novamente." >&2
@@ -29,7 +78,13 @@ echo "Iniciando sincronização de issues para $DIR -> $REPO"
 
 # arquivo temporário para registrar issues encontradas fechadas
 CLOSED_TMP=$(mktemp)
-> "$CLOSED_TMP"
+: > "$CLOSED_TMP"
+
+# garantir cleanup do temp file em qualquer saída
+cleanup() {
+  rm -f "${CLOSED_TMP:-}"
+}
+trap cleanup EXIT
 
 for f in "$DIR"/*.md; do
   [ -e "$f" ] || continue
@@ -43,29 +98,34 @@ for f in "$DIR"/*.md; do
   issue_url=""
 
   # 1) procurar issue existente com título exato via GitHub Search API (usando o nome do arquivo)
-  search_json=$(gh api -X GET /search/issues -f q="repo:$REPO in:title \"$issue_title\"" 2>/dev/null || true)
-    if [ -n "$search_json" ]; then
-    match=$(printf '%s' "$search_json" | TITLE="$issue_title" python3 - <<'PY'
-import sys, json, os
-txt = sys.stdin.read()
-try:
+  search_issue_by_title() {
+    local T="$1"
+    local sj
+    sj=$(gh api -X GET /search/issues -f q="repo:$REPO in:title \"$T\"" 2>/dev/null || true)
+    if [ -n "$sj" ]; then
+      printf '%s' "$sj" | TITLE="$T" python3 -c '
+  import sys, json, os
+  txt = sys.stdin.read()
+  try:
     j = json.loads(txt)
-except Exception:
+  except Exception:
     sys.exit(1)
-T = os.environ.get('TITLE', '')
-for it in j.get('items', []):
-    if it.get('title', '') == T:
-        # output: number\thtml_url\tstate
-        print(str(it.get('number')) + '\t' + it.get('html_url', '') + '\t' + it.get('state', ''))
-        sys.exit(0)
-sys.exit(1)
-PY
-  ) || true
-    if [ -n "$match" ]; then
-      issue_number=$(echo "$match" | cut -f1)
-      issue_url=$(echo "$match" | cut -f2)
-      issue_state=$(echo "$match" | cut -f3)
+  T = os.environ.get("TITLE", "")
+  for it in j.get("items", []):
+    if it.get("title", "") == T:
+      # output: number\thtml_url\tstate
+      print(str(it.get("number")) + "\t" + it.get("html_url", "") + "\t" + it.get("state", ""))
+      sys.exit(0)
+  sys.exit(1)
+  '
     fi
+  }
+
+  match=$(search_issue_by_title "$issue_title" ) || true
+  if [ -n "$match" ]; then
+    issue_number=$(echo "$match" | cut -f1)
+    issue_url=$(echo "$match" | cut -f2)
+    issue_state=$(echo "$match" | cut -f3)
   fi
 
   # 2) se não existir, criar e capturar o URL retornado pelo gh
@@ -81,30 +141,12 @@ PY
     else
       # fallback: procurar novamente via search e extrair correspondência exata
       echo "Aviso: não consegui capturar URL da criação; buscando por título..."
-      search_json2=$(gh api -X GET /search/issues -f q="repo:$REPO in:title \"$issue_title\"" 2>/dev/null || true)
-      if [ -n "$search_json2" ]; then
-        match2=$(printf '%s' "$search_json2" | TITLE="$issue_title" python3 - <<'PY'
-import sys, json, os
-txt = sys.stdin.read()
-try:
-    j = json.loads(txt)
-except Exception:
-    sys.exit(1)
-T = os.environ.get('TITLE', '')
-for it in j.get('items', []):
-    if it.get('title', '') == T:
-        # output: number\thtml_url\tstate
-        print(str(it.get('number')) + '\t' + it.get('html_url', '') + '\t' + it.get('state', ''))
-        sys.exit(0)
-sys.exit(1)
-PY
-) || true
-        if [ -n "$match2" ]; then
-          issue_number=$(echo "$match2" | cut -f1)
-          issue_url=$(echo "$match2" | cut -f2)
-          issue_state=$(echo "$match2" | cut -f3)
-          echo "Encontrada após criação: $issue_url (#$issue_number) state=$issue_state"
-        fi
+      match2=$(search_issue_by_title "$issue_title" ) || true
+      if [ -n "$match2" ]; then
+        issue_number=$(echo "$match2" | cut -f1)
+        issue_url=$(echo "$match2" | cut -f2)
+        issue_state=$(echo "$match2" | cut -f3)
+        echo "Encontrada após criação: $issue_url (#$issue_number) state=$issue_state"
       fi
     fi
   else
@@ -155,7 +197,7 @@ if [ -s "$CLOSED_TMP" ]; then
     echo "[$i] Issue #$num — $url  -> arquivo: $file"
   done < "$CLOSED_TMP"
 
-  echo "\nEscolha a ação para todas as issues fechadas listadas:"
+  printf '\nEscolha a ação para todas as issues fechadas listadas:\n'
   echo "  r) Reabrir e atualizar com o conteúdo local"
   echo "  n) Criar nova issue para cada arquivo (mantendo as remotas fechadas)"
   echo "  k) Manter fechadas (nenhuma ação)"
@@ -187,7 +229,12 @@ if [ -s "$CLOSED_TMP" ]; then
         new_out=$(gh issue create --repo "$REPO" --title "$title (reopened)" --body-file "$file" 2>/dev/null || true)
         new_url=$(printf '%s' "$new_out" | grep -Eo 'https://github.com/[^ ]+/issues/[0-9]+' | head -n1 || true)
         if [ -n "$new_url" ]; then
-          printf "\nIssue: %s\n" "$new_url" >> "$file"
+          # Atualiza a primeira linha "Issue:" existente (se houver) em vez de acumular
+          if grep -qE '^Issue:\s*https?://' "$file"; then
+            sed -i "0,/^Issue:\s*https?:\/\//s|^Issue:.*|Issue: $new_url|" "$file"
+          else
+            printf "\nIssue: %s\n" "$new_url" >> "$file"
+          fi
           echo "Criada: $new_url for $file"
         else
           echo "Falha ao criar nova issue para $file" >&2
