@@ -177,3 +177,9 @@ ai-*
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
+
+# vscode configs
+.vscode/
